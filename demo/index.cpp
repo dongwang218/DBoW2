@@ -20,6 +20,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
 
+#include "opencv2/xfeatures2d.hpp"
 
 using namespace DBoW2;
 using namespace std;
@@ -38,6 +39,7 @@ OrbVocabulary* testVocCreation(const string& strVocFile)
   return mpVocabulary;
 }
 
+#include "get_features.cpp"
 
 // ----------------------------------------------------------------------------
 
@@ -52,6 +54,7 @@ void testDatabase(const OrbVocabulary& voc, const string& images, const string& 
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
   // add images to the database
+  //cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
   //for(const auto& entry : boost::make_iterator_range(directory_iterator(image_dir), {}))
   ifstream index(images);
@@ -59,20 +62,12 @@ void testDatabase(const OrbVocabulary& voc, const string& images, const string& 
     int id, cluster_id;
     string filename;
     index >> id >> filename >> cluster_id;
+    if (filename.size() == 0) continue;
 
     cv::Mat image = cv::imread(image_dir + '/' + filename, 0);
-    cv::Mat mask;
-    vector<cv::KeyPoint> keypoints;
-    cv::Mat descriptors;
-
-    orb->detectAndCompute(image, mask, keypoints, descriptors);
-
     vector<cv::Mat> features;
-    features.resize(descriptors.rows);
-    for(int i = 0; i < descriptors.rows; ++i)
-    {
-      features[i] = descriptors.row(i);
-    }
+    //getSift(f2d, image, features);
+    getOrb(orb, image, features);
     EntryId eid = db.add(features);
     assert(eid == id);
     std::cout << eid << ' ' << filename << '\n';

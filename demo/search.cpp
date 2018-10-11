@@ -17,10 +17,12 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
 
+#include "opencv2/xfeatures2d.hpp"
 
 using namespace DBoW2;
 using namespace std;
 
+#include "get_features.cpp"
 
 // ----------------------------------------------------------------------------
 string image_dir("../sheetimages");
@@ -37,10 +39,12 @@ void testDatabase(const string& images, const string& db_file) {
     int id, cluster_id;
     string filename;
     index >> id >> filename >> cluster_id;
+    if (filename.size() == 0) continue;
     assert(results.size() == id);
     results.push_back({filename, cluster_id});
   }
 
+  cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
   for (int id = 0; id < results.size(); ++id) {
     cout << "Test " << results[id].first << ' ' << results[id].second << endl;
@@ -50,18 +54,9 @@ void testDatabase(const string& images, const string& db_file) {
     cluster_id = results[id].second;
 
     cv::Mat image = cv::imread(image_dir + '/' + filename, 0);
-    cv::Mat mask;
-    vector<cv::KeyPoint> keypoints;
-    cv::Mat descriptors;
-
-    orb->detectAndCompute(image, mask, keypoints, descriptors);
-
     vector<cv::Mat> features;
-    features.resize(descriptors.rows);
-    for(int i = 0; i < descriptors.rows; ++i)
-    {
-      features[i] = descriptors.row(i);
-    }
+    //getSift(f2d, image, features);
+    getOrb(orb, image, features);
 
     QueryResults ret;
     db.query(features, ret, 6);
