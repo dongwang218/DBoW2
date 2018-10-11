@@ -18,7 +18,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -std=c++11")
 endif()
 
 set(HDRS
@@ -26,7 +26,7 @@ set(HDRS
   include/DBoW2/QueryResults.h        include/DBoW2/TemplatedDatabase.h   include/DBoW2/FORB.h
   include/DBoW2/DBoW2.h               include/DBoW2/FClass.h              include/DBoW2/FeatureVector.h
   include/DBoW2/ScoringObject.h       include/DBoW2/TemplatedVocabulary.h)
-set(SRCS 
+set(SRCS
   src/BowVector.cpp     src/FBrief.cpp        src/FORB.cpp
   src/FeatureVector.cpp src/QueryResults.cpp  src/ScoringObject.cpp)
 
@@ -35,6 +35,8 @@ set(DEPENDENCY_INSTALL_DIR ${DEPENDENCY_DIR}/install)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
+
+find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 if(BUILD_DBoW2)
   set(LIB_SHARED "SHARED")
@@ -50,6 +52,16 @@ if(BUILD_Demo)
   add_executable(demo demo/demo.cpp)
   target_link_libraries(demo ${PROJECT_NAME} ${OpenCV_LIBS})
   file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
+
+  add_executable(index demo/index.cpp)
+  target_link_libraries(index ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})
+
+  add_executable(search demo/search.cpp)
+  target_link_libraries(search ${PROJECT_NAME} ${OpenCV_LIBS})
+
+  add_executable(dictionary demo/dictionary.cpp)
+  target_link_libraries(dictionary ${PROJECT_NAME} ${OpenCV_LIBS})
 endif(BUILD_Demo)
 
 configure_file(src/DBoW2.cmake.in
@@ -61,6 +73,6 @@ if(BUILD_DBoW2)
 endif()
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DBoW2Config.cmake"
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
-install(FILES "${PROJECT_BINARY_DIR}/DBoW2Config.cmake" 
+install(FILES "${PROJECT_BINARY_DIR}/DBoW2Config.cmake"
   DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW2/)
 install(DIRECTORY ${DEPENDENCY_INSTALL_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
