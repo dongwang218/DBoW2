@@ -13,7 +13,7 @@
 #include <boost/range/iterator_range.hpp>
 
 // DBoW2
-#include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
+#include "DBoW2.h" // defines SurfVocabulary and SurfDatabase
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -30,9 +30,9 @@ using namespace boost::filesystem;
 
 // ----------------------------------------------------------------------------
 
-OrbVocabulary* testVocCreation(const string& strVocFile)
+SurfVocabulary* testVocCreation(const string& strVocFile)
 {
-  OrbVocabulary* mpVocabulary = new OrbVocabulary();
+  SurfVocabulary* mpVocabulary = new SurfVocabulary();
   if (strVocFile.find(".txt") != string::npos) mpVocabulary->loadFromTextFile(strVocFile);
   else mpVocabulary->load(strVocFile);
   cout << "Vocabulary loaded!" << endl << endl;
@@ -44,18 +44,20 @@ OrbVocabulary* testVocCreation(const string& strVocFile)
 // ----------------------------------------------------------------------------
 
 string image_dir("../sheetimages");
-void testDatabase(const OrbVocabulary& voc, const string& images, const string& db_file, bool firstonly) {
+void testDatabase(const SurfVocabulary& voc, const string& images, const string& db_file, bool firstonly) {
   cout << "Creating a small database..." << endl;
 
-  OrbDatabase db(voc, false, 0); // false = do not use direct index
+  SurfDatabase db(voc, false, 0); // false = do not use direct index
   // (so ignore the last param)
   // The direct index is useful if we want to retrieve the features that
   // belong to some vocabulary node.
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
+  int minHessian = 400;
   // add images to the database
-  //cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
-  cv::Ptr<cv::ORB> orb = cv::ORB::create();
+  //cv::Ptr<cv::ORB> orb = cv::ORB::create();
+  cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create( minHessian );
+
   //for(const auto& entry : boost::make_iterator_range(directory_iterator(image_dir), {}))
   ifstream index(images);
   int last_cluster_id = -1;
@@ -69,8 +71,14 @@ void testDatabase(const OrbVocabulary& voc, const string& images, const string& 
     cv::Mat image = cv::imread(image_dir + '/' + filename, 0);
     vector<cv::Mat> features;
     //getSift(f2d, image, features);
-    getOrb(orb, image, features);
-    EntryId eid = db.add(features);
+    getSurf(surf, image, features);
+    vector<vector<float>> surf_features(features.size());
+
+    for (int i = 0; i < features.size(); ++i) {
+      mat2vector(features[i], surf_features[i]);
+    }
+
+    EntryId eid = db.add(surf_features);
     assert(eid == id || eid == cluster_id);
     std::cout << eid << ' ' << filename << '\n';
   }
@@ -86,7 +94,7 @@ void testDatabase(const OrbVocabulary& voc, const string& images, const string& 
 int main(int argc, char** argv)
 {
   cout << "Running " << argv[0] << ' ' << argv[1] << ' ' << argv[2] << ' ' << argv[3] << endl;
-  OrbVocabulary* voc = testVocCreation(argv[1]);
+  SurfVocabulary* voc = testVocCreation(argv[1]);
 
   testDatabase(*voc, argv[2], argv[3], string(argv[4]) == "firstonly");
 

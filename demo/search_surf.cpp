@@ -10,7 +10,7 @@
 #include <vector>
 
 // DBoW2
-#include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
+#include "DBoW2.h" // defines SurfVocabulary and SurfDatabase
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -29,7 +29,7 @@ string image_dir("../sheetimages");
 void testDatabase(const string& images, const string& db_file, bool firstonly) {
   cout << "Creating a small database..." << endl;
 
-  OrbDatabase db(db_file);
+  SurfDatabase db(db_file);
 
   int total = 0, correct = 0;
 
@@ -48,8 +48,10 @@ void testDatabase(const string& images, const string& db_file, bool firstonly) {
     last_cluster_id = cluster_id;
   }
 
+  int minHessian = 400;
   //cv::Ptr<cv::Feature2D> f2d = cv::xfeatures2d::SIFT::create();
-  cv::Ptr<cv::ORB> orb = cv::ORB::create();
+  //cv::Ptr<cv::ORB> orb = cv::ORB::create();
+  cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create( minHessian );
   for (int id = 0; id < results.size(); ++id) {
     cout << "Test " << results[id].first << ' ' << results[id].second << endl;
     int cluster_id;
@@ -60,10 +62,15 @@ void testDatabase(const string& images, const string& db_file, bool firstonly) {
     cv::Mat image = cv::imread(image_dir + '/' + filename, 0);
     vector<cv::Mat> features;
     //getSift(f2d, image, features);
-    getOrb(orb, image, features);
+    getSurf(surf, image, features);
+    vector<vector<float>> surf_features(features.size());
+
+    for (int i = 0; i < features.size(); ++i) {
+      mat2vector(features[i], surf_features[i]);
+    }
 
     QueryResults ret;
-    db.query(features, ret, 6);
+    db.query(surf_features, ret, 6);
     total += firstonly ? 1 : ret.size();
     for (auto& qr: ret) {
       if (firstonly) {
