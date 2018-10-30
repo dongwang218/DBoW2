@@ -26,10 +26,10 @@ set(HDRS
   include/DBoW2/QueryResults.h        include/DBoW2/TemplatedDatabase.h   include/DBoW2/FORB.h
   include/DBoW2/DBoW2.h               include/DBoW2/FClass.h              include/DBoW2/FeatureVector.h
   include/DBoW2/ScoringObject.h       include/DBoW2/TemplatedVocabulary.h
-  include/DBoW2/FSurf64.h)
+  include/DBoW2/FSurf64.h include/DBoW2/FSift128.h)
 set(SRCS
   src/BowVector.cpp     src/FBrief.cpp        src/FORB.cpp
-  src/FeatureVector.cpp src/QueryResults.cpp  src/ScoringObject.cpp src/FSurf64.cpp)
+  src/FeatureVector.cpp src/QueryResults.cpp  src/ScoringObject.cpp src/FSurf64.cpp src/FSift128.cpp)
 
 set(DEPENDENCY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dependencies)
 set(DEPENDENCY_INSTALL_DIR ${DEPENDENCY_DIR}/install)
@@ -62,8 +62,20 @@ if(BUILD_Demo)
   target_link_libraries(index_surf ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY})
 
+  add_executable(encode_sift demo/encode_sift.cpp)
+  target_link_libraries(encode_sift ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})
+
   add_executable(search_surf demo/search_surf.cpp)
   target_link_libraries(search_surf ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})
+
+  add_executable(index_sift demo/index_sift.cpp)
+  target_link_libraries(index_sift ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})
+
+  add_executable(search_sift demo/search_sift.cpp)
+  target_link_libraries(search_sift ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY})
 
   add_executable(search demo/search.cpp)
@@ -71,6 +83,9 @@ if(BUILD_Demo)
 
   add_executable(dictionary demo/dictionary.cpp)
   target_link_libraries(dictionary ${PROJECT_NAME} ${OpenCV_LIBS})
+
+  add_executable(dictionary_sift demo/dictionary_sift.cpp)
+  target_link_libraries(dictionary_sift ${PROJECT_NAME} ${OpenCV_LIBS})
 endif(BUILD_Demo)
 
 configure_file(src/DBoW2.cmake.in

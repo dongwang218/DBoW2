@@ -57,6 +57,7 @@ namespace DBoW2
 #include "FBrief.h"
 #include "FORB.h"
 #include "FSurf64.h"
+#include "FSift128.h"
 
 /// ORB Vocabulary
 typedef DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>
@@ -80,5 +81,10 @@ SurfVocabulary;
 typedef DBoW2::TemplatedDatabase<DBoW2::FSurf64::TDescriptor, DBoW2::FSurf64>
   SurfDatabase;
 
+typedef DBoW2::TemplatedVocabulary<DBoW2::FSift128::TDescriptor, DBoW2::FSift128>
+SiftVocabulary;
+
+typedef DBoW2::TemplatedDatabase<DBoW2::FSift128::TDescriptor, DBoW2::FSift128>
+  SiftDatabase;
 
 #endif
