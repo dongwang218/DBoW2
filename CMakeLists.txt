@@ -86,6 +86,9 @@ if(BUILD_Demo)
 
   add_executable(dictionary_sift demo/dictionary_sift.cpp)
   target_link_libraries(dictionary_sift ${PROJECT_NAME} ${OpenCV_LIBS})
+
+  add_executable(dictionary_fvecs demo/dictionary_fvecs.cpp)
+  target_link_libraries(dictionary_fvecs ${PROJECT_NAME} ${OpenCV_LIBS})
 endif(BUILD_Demo)
 
 configure_file(src/DBoW2.cmake.in
